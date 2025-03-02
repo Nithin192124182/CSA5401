@@ -1,0 +1,48 @@
+import scapy.all as scapy
+import matplotlib.pyplot as plt
+import numpy as np
+from scapy.all import sniff
+from collections import Counter
+import ipaddress
+
+# Counter to track IP addresses
+ip_count = Counter()
+
+# Function to capture packets and print Source/Destination IPs
+def capture_packets(packet):
+    if packet.haslayer(scapy.IP):
+        print(f"Source IP: {packet[scapy.IP].src}, Destination IP: {packet[scapy.IP].dst}")
+
+# Capture 10 packets and display IPs
+sniff(prn=capture_packets, count=10)
+
+# Function to count packets per IP
+def count_packets(packet):
+    if packet.haslayer(scapy.IP):
+        ip_count[packet[scapy.IP].src] += 1
+        ip_count[packet[scapy.IP].dst] += 1
+
+# Capture 50 packets for IP frequency analysis
+sniff(prn=count_packets, count=50)
+
+# Convert data to lists for visualization
+ips = list(ip_count.keys())
+counts = list(ip_count.values())
+
+# Plot the IP Address Analysis
+plt.figure(figsize=(10, 5))
+plt.bar(ips, counts, color='blue')
+plt.xticks(rotation=45)
+plt.xlabel("IP Addresses")
+plt.ylabel("Number of Packets")
+plt.title("IP Address Allocation Analysis")
+plt.show()
+
+# Function to classify IP addresses as private or public
+def classify_ip(ip):
+    ip_obj = ipaddress.ip_address(ip)
+    return "Private IP" if ip_obj.is_private else "Public IP"
+
+# Display classification of captured IPs
+for ip in ip_count.keys():
+    print(f"{ip}: {classify_ip(ip)}")
