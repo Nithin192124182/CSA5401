@@ -1,0 +1,42 @@
+import os
+import shutil
+
+# Windows hosts file location
+HOSTS_FILE = r"C:\Windows\System32\drivers\etc\hosts"
+
+def read_hosts():
+    if not os.path.exists(HOSTS_FILE):
+        print("[ERROR] Hosts file not found!")
+        return
+    try:
+        with open(HOSTS_FILE, 'r') as file:
+            print("\n===== Contents of hosts file =====\n")
+            print(file.read())
+    except Exception as e:
+        print(f"[ERROR] Failed to read hosts file: {e}")
+
+def modify_hosts():
+    if not os.path.exists(HOSTS_FILE):
+        print("[ERROR] Hosts file not found!")
+        return
+    try:
+        # Backup the hosts file before modifying
+        shutil.copy(HOSTS_FILE, HOSTS_FILE + ".bak")
+        with open(HOSTS_FILE, "a") as file:
+            file.write("\n192.168.1.100 mycustomhost\n")
+        print("[SUCCESS] Hosts file updated.")
+    except Exception as e:
+        print(f"[ERROR] Failed to update hosts file: {e}")
+
+def restart_network():
+    try:
+        os.system("ipconfig /flushdns")
+        os.system("net stop dnscache && net start dnscache")
+        print("[SUCCESS] DNS cache flushed and network services restarted.")
+    except Exception as e:
+        print(f"[ERROR] Failed to restart network services: {e}")
+
+if __name__ == "__main__":
+    read_hosts()
+    modify_hosts()
+    restart_network()
